@@ -32,6 +32,24 @@ Importante aclarar que, dado que las funciones de hash son determinísticas y pa
 
 # Punto 2 
 Suponiendo que el día en el que nace una persona es equiprobable, cosa que en la realidad no debe ser cierto: 
+
+Sea $S$ el espacio muestral $S = \{w \mid w \in \mathbb{N} \land w \in \{1,2,\ldots,365\}\}$. Que representa el dia que cumple años una persona. 
+
+$P(A_i = x) = \frac{1}{365}$ Con $x \in S$ y $A_i$ el dia que cumple la persona i-esima. 
+
+Queremos encontrar la probabilidad de que la fecha de cumpleanios de la persona $i$, sea igual a la de la persona $j$, con $i \neq j$ y $i$ y $j$ indices validos de personas dentro de la cantidad de personas que estamos contando. 
+
+Yo quiero encontrar $P(\{A_i = A_j / i \neq j \land i \in k \land j \in k\})$. Donde $k$ es el conjunto de los indices de las personas. 
+
+Esto va a ser igual a $P(\bigcup_{\substack{i,j \\ i \neq j}}^{k} \{ A_i = A_j \}) = 1 - P((\bigcup_{\substack{i,j \\ i \neq j}}^{k} \{ A_i = A_j \})^c) \overset{\text{por De Morgan}}{=} 1 -\bigcap_{\substack{i,j \\ i \neq j}}^{k} \{ A_i \neq A_j \} = \frac{365 \times 364 \times \ldots 365 - k - 1}{365^k}$. 
+
+En esta ultima expresion el numerador serian nuestros casos positivos, donde no hay dos personas con el mismo cumpleanios, dividido los casos totales que son todos los posibles cumpleanios. 
+
+Generalizandolo, suponiendo que llamamos $n$ a las posibles fechas, a lo que llegamos es: 
+
+$1 - \frac{n \times (n - 1) \times (n-2) \ldots (n - q + 1)}{n^k} = 1 - (\frac{n}{n} \times \frac{n-1}{n} \ldots \times \frac{n - k + 1}{n}) = 1 - \prod_{l=0}^{k-1} \frac{n-l}{n} = 1 - \prod_{l=0}^{k-1} 1 - \frac{l}{n}$
+
+
 # Punto 3 
 La función de hash propuesta recibe cadenas binarias de cualquier longitud y devuelve una cadena binaria de longitud $n$. La particularidad es que, si se ingresa una cadena de longitud $n$, la función no realiza ningún hash, sino que actúa como la función identidad. Para cadenas de otras longitudes, se comporta como una función de hash criptográfica, similar a las que vimos en clase.
 
