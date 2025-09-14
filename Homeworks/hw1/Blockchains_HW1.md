@@ -30,25 +30,59 @@ Importante aclarar que, dado que las funciones de hash son determinísticas y pa
 ## Punto C
 ![alt text](patriciatrie.jpg) 
 
-# Punto 2 
-Suponiendo que el día en el que nace una persona es equiprobable, cosa que en la realidad no debe ser cierto: 
+# Ejercicio 2
+## Punto A
+Suponiendo que el día en el que nace una persona es equiprobable, cosa que en la realidad no debe ser cierto:
 
-Sea $S$ el espacio muestral $S = \{w \mid w \in \mathbb{N} \land w \in \{1,2,\ldots,365\}\}$. Que representa el dia que cumple años una persona. 
+Sea $S$ el espacio muestral $S = {w \mid w \in \mathbb{N} \land w \in {1,2,\ldots,365}}$. Que representa el día que cumple años una persona.
 
-$P(A_i = x) = \frac{1}{365}$ Con $x \in S$ y $A_i$ el dia que cumple la persona i-esima. 
+$P(A_i = x) = \frac{1}{365}$ Con $x \in S$ y $A_i$ el día que cumple la persona i-ésima.
 
-Queremos encontrar la probabilidad de que la fecha de cumpleanios de la persona $i$, sea igual a la de la persona $j$, con $i \neq j$ y $i$ y $j$ indices validos de personas dentro de la cantidad de personas que estamos contando. 
+Queremos encontrar la probabilidad de que la fecha de cumpleaños de la persona $i$, sea igual a la de la persona $j$, con $i \neq j$ y $i$ y $j$ índices válidos de personas dentro de la cantidad de personas que estamos contando.
 
-Yo quiero encontrar $P(\{A_i = A_j / i \neq j \land i \in k \land j \in k\})$. Donde $k$ es el conjunto de los indices de las personas. 
+Yo quiero encontrar $P({A_i = A_j / i \neq j \land i \in k \land j \in k})$. Donde $k$ es el conjunto de los índices de las personas.
 
-Esto va a ser igual a $P(\bigcup_{\substack{i,j \\ i \neq j}}^{k} \{ A_i = A_j \}) = 1 - P((\bigcup_{\substack{i,j \\ i \neq j}}^{k} \{ A_i = A_j \})^c) \overset{\text{por De Morgan}}{=} 1 -\bigcap_{\substack{i,j \\ i \neq j}}^{k} \{ A_i \neq A_j \} = \frac{365 \times 364 \times \ldots 365 - k - 1}{365^k}$. 
+Esto va a ser igual a $P(\bigcup_{\substack{i,j \ i \neq j}}^{k} { A_i = A_j }) = 1 - P((\bigcup_{\substack{i,j \ i \neq j}}^{k} { A_i = A_j })^c) \overset{\text{por De Morgan}}{=} 1 -\bigcap_{\substack{i,j \ i \neq j}}^{k} { A_i \neq A_j } = \frac{365 \times 364 \times \ldots 365 - k - 1}{365^k}$.
 
-En esta ultima expresion el numerador serian nuestros casos positivos, donde no hay dos personas con el mismo cumpleanios, dividido los casos totales que son todos los posibles cumpleanios. 
+En esta última expresión el numerador sería nuestros casos positivos, donde no hay dos personas con el mismo cumpleaños, dividido los casos totales que son todos los posibles cumpleaños.
 
-Generalizandolo, suponiendo que llamamos $n$ a las posibles fechas, a lo que llegamos es: 
+Generalizándolo, suponiendo que llamamos $n$ a las posibles fechas, a lo que llegamos es:
 
 $1 - \frac{n \times (n - 1) \times (n-2) \ldots (n - q + 1)}{n^k} = 1 - (\frac{n}{n} \times \frac{n-1}{n} \ldots \times \frac{n - k + 1}{n}) = 1 - \prod_{l=0}^{k-1} \frac{n-l}{n} = 1 - \prod_{l=0}^{k-1} 1 - \frac{l}{n}$
 
+Para poder aproximar esta última productoria, puedo usar la desigualdad: $1 - x \leq e^{-x}$, por lo tanto sea $x = \frac{l}{n}$:
+
+$1 - \frac{l}{m} \leq e^{-\frac{l}{n}}$.
+
+Por lo tanto $\prod_{l=0}^{k-1} 1 - \frac{l}{n} \leq \prod_{l=0}^{k-1} e^{-\frac{l}{n}}$
+
+Y, como multiplicar una exponencial, es igual a mantener su base y sumar los exponentes:
+
+$\prod_{l=0}^{k-1} e^{-\frac{l}{n}} = e^{\sum_{l=0}^{k-1}-\frac{l}{n}} = e^{-\frac{1}{n}\sum_{l=0}^{k-1}l}$
+
+Como $\sum_{l=0}^{k-1}l = \frac{k(k-1)}{2}$:
+
+$e^{-\frac{1}{n}\sum_{l=0}^{k-1}l} = e^{-\frac{1}{n}\frac{k(k-1)}{2}} = e^{-\frac{k(k-1)}{2n}}$
+
+Por lo tanto, para que dos personas tengan una probabilidad mayor al 50% de cumplir años el mismo día habría que resolver:
+
+$1 - e^{-\frac{k(k-1)}{2n}} > \frac{1}{2} \iff -e^{-\frac{k(k-1)}{2n}} > -\frac{1}{2} \iff e^{-\frac{k(k-1)}{2n}} < \frac{1}{2}$
+
+Tomo logaritmo natural de los dos lados para sacarme de encima la exponencial:
+
+$-\frac{k(k-1)}{2n} < ln(\frac{1}{2})$
+
+Y como $ln(\frac{1}{2}) = -ln(2)$, uso eso para sacarme el menos de encima de la expresión.
+
+$-\frac{k(k-1)}{2n} < -ln(2)$ $\iff$ $\frac{k(k-1)}{2n} > ln(2) \iff k(k-1) > 2n \times ln(2)$
+
+Como $n$ se refiere a los posibles días del año para cumplir, lo reemplazo por 365, para ver el número de gente necesario ($k$), para tener una probabilidad mayor al 50% de que dos de ellas cumplan años el mismo día.
+
+$k(k-1) > 2 \times 365 \times ln(2) \iff k(k-1) > 730 \times ln(2) \iff k^{2} - k - 730 \times ln(2) > 0 \iff k > 23$ (Tomando $K \in \mathbf{N}$)
+
+Por lo tanto, la cantidad de gente necesaria, para que haya un 50% de probabilidad de compartir cumpleaños es 23.
+
+En este ejercicio, para el punto clave que es acotar la productoria por la sumatoria de la exponencial, me tiró el centro Juan Cruz Montero, que se lo explicó Francisco el jueves que hubo clase de consulta. 
 
 # Punto 3 
 La función de hash propuesta recibe cadenas binarias de cualquier longitud y devuelve una cadena binaria de longitud $n$. La particularidad es que, si se ingresa una cadena de longitud $n$, la función no realiza ningún hash, sino que actúa como la función identidad. Para cadenas de otras longitudes, se comporta como una función de hash criptográfica, similar a las que vimos en clase.
