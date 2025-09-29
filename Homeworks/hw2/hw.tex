@@ -1,0 +1,110 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode} % Usamos sólo algpseudocode (no algorithmic)
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,       
+    breakatwhitespace=false,
+    frame=single,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+}
+\geometry{margin=1in}
+
+\title{\fontsize{16}{18}\selectfont Fundamentos y Aplicaciones de Blockchains, Homework 2}
+\author{Matías Eliel Waisman}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Ejercicio 1}
+
+\subsection*{Punto A}
+
+El propósito de una Public Key Infrastructure es incrementar la confianza entre los participantes de una red. Permite verificar y confiar en las firmas digitales emitidas por la entidad certificadora, garantizando la autenticidad de los mensajes y la identidad de los participantes.  
+
+También nos sirve para poder llegar a consenso con una mayor cantidad de participantes maliciosos. En la siguiente tabla comparo la cantidad de participantes maliciosos máximos que podemos tener para llegar al consenso si no tenemos setup vs si lo tenemos:
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Problema & Máximo número de participantes maliciosos sin Setup & Máximo número de participantes maliciosos con Setup \\
+\hline
+Consenso & $\frac{N}{3} - 1$ & $\frac{N}{2} - 1$ \\
+Broadcast & $\frac{N}{3} - 1$ & $N - 1$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Por lo tanto, en un problema de Broadcast, usando un setup con PKI podemos llegar a una solución óptima, porque el problema no se puede resolver si hay una cantidad de participantes maliciosos mayor o igual a la cantidad de participantes totales.  
+
+Otra ventaja importante de contar con un trusted setup es que la complejidad de los algoritmos de consenso se reduce significativamente: mientras que la solución clásica sin setup (BDDS87) tiene una complejidad de orden exponencial, con PKI la solución es más simple y es de orden polinomial.  
+
+Si no tenemos un ``ente confiable'' que emite las firmas, tenemos el mismo problema que si no lo tuviéramos, ya que nunca podríamos saber, o confiar, si un mensaje firmado por un miembro realmente lo firmó él y no fue firmado por otro participante haciéndose pasar por él.  
+
+Esto podría suceder porque el encargado de las firmas es malicioso y le pudo haber provisto las claves privadas a miembros maliciosos, o porque es ``malo'' el algoritmo que usa para las claves, por lo que es fácil encontrar la clave privada de un usuario dada su clave pública y un mensaje firmado por él.  
+
+\subsection*{Punto B}
+
+En la red de Bitcoin, a diferencia de un sistema distribuido tradicional, los nodos no tienen identidades fijas ni están registrados. La red es dinámica, porque cualquiera puede entrar o salir libremente y no hay un listado de participantes.  
+
+Por este motivo, el protocolo de consenso de la blockchain corre sin depender de una PKI. En particular, no se usan firmas digitales para autenticar a los mineros, sino que se usa Proof Of Work para autenticar y generar consenso en el problema de quién va a ser el que agregue el bloque a la blockchain.  
+
+Sin embargo, las transacciones sí emplean firmas digitales mediante ECDSA. Cuando un usuario crea una transacción, la firma con su clave privada, y los demás participantes pueden verificar la validez de esa firma usando la transacción y la clave pública del usuario que firmó, para verificar que él fue el que hizo la transacción.  
+
+La diferencia clave con un esquema de PKI es que en Bitcoin no existe una autoridad central que emita o certifique las claves que se usan para firmar transacciones. Cada usuario genera su propio par de claves localmente.  
+
+\textbf{Nota:} preguntar qué onda lo del string público del principio porque suena a PKI.  
+
+\section*{Ejercicio 2}
+
+Bloque, $S$ puntero al anterior. $X$ datos del bloque y $ctr$ es el número de la PoW.  
+
+\section*{Ejercicio 3}
+
+\subsection*{Punto A}
+
+Mi idea es usar los prefijos de la cadena y quedarme siempre con la cabeza de ese prefijo para verificar la validez de los bloques del más viejo al más reciente.  
+
+\begin{algorithm}[H]
+\caption{Validación de la cadena desde el bloque más viejo}
+\begin{algorithmic}[1]
+\Function{validate}{$C$}
+    \State $b \gets V(x_C)$ 
+    \If{$b \land (C \neq \varepsilon)$} 
+        \State $\langle s, x, ctr \rangle \gets head(C^{[0]})$ \Comment{Me quedo con el bloque más viejo}
+        \If{$validblock^q_T(\langle s, x, ctr \rangle)$} \Comment{Si el primer bloque es válido}
+            \State $i \gets 1$ 
+            \Repeat \Comment{Repito hasta que $i$ sea mayor a la longitud de la cadena o $b$ sea falso}
+                \State $\langle s', x, ctr \rangle \gets head(C^{[i]})$ \Comment{Siguiente bloque al más viejo}
+                \If{$validblock^q_T(\langle s', x, ctr \rangle) \land (H(ctr, G(s',x)) = s)$} \Comment{Valido bloque y referencia}
+                    \State $s \gets s'$ \Comment{Guardo el hash del bloque actual}
+                \Else
+                    \State $b \gets False$
+                \EndIf
+            \Until{$(i = len(C) + 1) \lor (b = False)$}
+        \EndIf
+    \EndIf
+    \State \Return $b$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Punto B}
+
+Comenzar la validación desde el primer bloque (el más antiguo) garantiza que cada bloque que consideramos válido realmente lo es, ya que se verifica la validez de toda la cadena de manera constructiva. Esto evita confiar en bloques mas viejos para validar bloques mas nuevos, lo cual podría ocultar errores si un bloque apunta a otro inválido. En cambio al verificar del mas viejo al mas nuevo, nos aseguramos que todos los bloques que afirmamos que son validos realmente lo son.
+
+Una desventaja de comenzar la validación desde el primer bloque es que, en la práctica, los errores de validez son mucho más probables en los bloques más recientes. Por ejemplo, validar el bloque génesis no aporta demasiado, ya que siempre se asume correcto y es altamente improbable que allí esté el error. En consecuencia, este enfoque podría implicar un costo innecesario de verificación de muchos bloques `viejos'' antes de detectar una invalidez en un bloque más reciente. En términos de complejidad asintótica, ambos algoritmos tienen la misma cota superior (en el peor caso deben verificar toda la cadena). Sin embargo, en la práctica resulta más eficiente comenzar desde el bloque más reciente hacia atrás, ya que aumenta la probabilidad de encontrar un bloque inválido más temprano y, por lo tanto, reducir la cantidad de bloques que es necesario verificar.
+
+\end{document}
