@@ -7,7 +7,10 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{algorithm}
-\usepackage{algpseudocode} % Usamos sólo algpseudocode (no algorithmic)
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\usepackage{array}     
+\renewcommand{\arraystretch}{1.5} 
 
 \lstset{
     basicstyle=\ttfamily\small,
@@ -34,16 +37,23 @@
 
 El propósito de una Public Key Infrastructure es incrementar la confianza entre los participantes de una red. Permite verificar y confiar en las firmas digitales emitidas por la entidad certificadora, garantizando la autenticidad de los mensajes y la identidad de los participantes.  
 
-La PKI lo que nos garantiza es que dada una clave publica la podes asociar a una entidad/ persona. Si el problema de concenso requiere poder asociar a una entidad con una clave, entonces vamos a necesitar tener una PKI. 
+La PKI lo que nos garantiza es que dada una clave publica, esta se puede asociar a una entidad/ persona. Si el problema de concenso requiere asociar a una clave a una entidad, entonces vamos a necesitar tener una PKI. 
+
+En un protocolo con Public Key Infrastructure, una "autoridad certificadora" va a ser el que atestigue que una clave publica esta asociada a una entidad/ persona. 
 
 Un ejemplo en el cual nos beneficia tener una PKI es para para poder resolver los problemas de consenso bizantino con una mayor cantidad de participantes maliciosos. En la siguiente tabla comparo la cantidad de participantes maliciosos máximos que podemos tener para llegar al consenso si no tenemos setup vs si lo tenemos:
 
 \begin{center}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|>{\centering\arraybackslash}m{3cm}|
+                >{\centering\arraybackslash}m{5cm}|
+                >{\centering\arraybackslash}m{5cm}|}
 \hline
-Problema & Máximo número de participantes maliciosos sin Setup & Máximo número de participantes maliciosos con Setup \\
+\textbf{Problema} & 
+\textbf{Máximo número de participantes maliciosos sin Setup} & 
+\textbf{Máximo número de participantes maliciosos con Setup} \\
 \hline
 Consenso & $\frac{N}{3} - 1$ & $\frac{N}{2} - 1$ \\
+\hline
 Broadcast & $\frac{N}{3} - 1$ & $N - 1$ \\
 \hline
 \end{tabular}
@@ -51,27 +61,39 @@ Broadcast & $\frac{N}{3} - 1$ & $N - 1$ \\
 
 Pero si nuestro problema de concenso se puede resolver sin necesidad de asociar una firma a una entidad, la PKI no es la que garantiza las propiedades de las firmas digitales. 
 
-(Hablar mas acerda de las propiedades de las firmas digitales y pq PKI no te garantiza eso)
+Propiedades de las firmas digitales como existential unforgeability, no dependen de la existencia de una PKI, sino del esquema de firma digital en sí y de la robustez de los algoritmos criptográficos que se usen. Un esquema de firmas inseguro, va a seguir siendolo aunque usemos PKI, y uno seguro va a seguir siendolo aunque no usemos PKI. 
+
 \subsection*{Punto B}
 
-En la red de Bitcoin, a diferencia de un sistema distribuido tradicional, los nodos no tienen identidades fijas ni están registrados. La red es dinámica, porque cualquiera puede entrar o salir libremente y no hay un listado de participantes.  
+En la red de Bitcoin, a diferencia de un sistema distribuido tradicional, los nodos no tienen identidades fijas ni están registrados. 
+La red es abierta y dinámica, cualquiera puede unirse o salir en cualquier momento, y no existe un listado de participantes.
 
-Por este motivo, el protocolo de consenso de la blockchain corre sin depender de una PKI. En particular, no necesitamos asociar una clave a una entidad para autenticar a los mineros, sino que se usa Proof Of Work para autenticar y generar consenso en el problema de quién va a ser el que agregue el bloque a la blockchain.  
+Por este motivo, el protocolo de consenso de la blockchain funciona sin depender de una PKI. 
+Para el problema de descidir quien va a agregar un nuevo bloque a la cadena, no es necesario asociar una clave pública a una entidad específica para autenticar a los mineros. La selección de quién propone el siguiente bloque se resuelve mediante el mecanismo de Proof of Work, que asegura tanto la autenticidad de los bloques como el consenso sobre el estado de la cadena.
 
-Sin embargo, las transacciones sí emplean firmas digitales mediante ECDSA. Cuando un usuario crea una transacción, la firma con su clave privada, y los demás participantes pueden verificar la validez de esa firma usando la transacción y la clave pública del usuario que firmó, para verificar que él fue el que hizo la transacción.  
+Por más que las transacciones de Bitcoin usan firmas digitales basadas en el esquema ECDSA, no es necesario asociar una firma en una transacción a un usuario. 
+Cuando un usuario crea una transacción, la firma con su clave privada, y los demás nodos pueden verificar la validez de esa firma usando la transacción y la clave pública del firmante. 
+Esto garantiza que sólo quien posee la clave privada correspondiente a una dirección puede autorizar el gasto de los fondos asociados a ella, no es necesario asociar la transacción a un ente para determinar que fue valida. 
 
-La diferencia clave con un esquema de PKI es que en Bitcoin no existe una autoridad central que emita o certifique las claves que se usan para firmar transacciones. Cada usuario genera su propio par de claves para firmar transacciones localmente.
+En Bitcoin no existe ninguna autoridad central que emita o certifique las claves públicas empleadas para firmar transacciones. 
+Cada usuario genera localmente su propio par de claves, sin que éstas deban estar vinculadas a identidades “reales”.
 
-Esto ocurre porque en la red de Bitcoin no nos interesa relacionar una clave publica con un usuario/ ente. Por lo tanto en Bitcoin no se usa PKI. 
-
-\textbf{Nota:} preguntar qué onda lo del string público del principio porque suena a PKI.  
+Por lo tanto, Bitcoin no asume una PKI, ya que la seguridad de sus transacciones dependen de las propiedades de seguridad que nos dan las firmas digitales y de Proof of Work para el consenso.  
 
 \section*{Ejercicio 2}
 
-El algoritmo arranca del bloque epsilon, y no de un genesis aleatorio, porque asume que no van a haber ataques de pre computación. 
+El algoritmo arranca desde el bloque $\varepsilon$, en lugar de partir de un bloque génesis impredecible, porque asume explícitamente que no pueden ocurrir ataques de pre-cómputo \href{https://dl.acm.org/doi/10.1145/3653445#fn13}{(Fuente)}.
 
-(Hablar de problema de pre computacion y como te salva el bloque genesis aleatorio)
-\href{https://dl.acm.org/doi/10.1145/3653445#fn13}{(Fuente)}
+En un ataque de pre-cómputo, un minero malicioso intenta minar bloques válidos por adelantado con el objetivo de revertir o insertar transacciones en la cadena, o bien de aumentar su probabilidad de encontrar el nonce y así imponer sus propios bloques en la cadena. 
+
+Llevar a cabo un ataque de este tipo no es trivial en una blockchain basada en PoW, ya que el contenido del bloque $N+1$ depende del bloque $N$, porque el bloque $N + 1$ debe apuntar al hash del bloque anterior. Si un atacante pudiera predecir el hash del bloque $N$ (y, dado que el \emph{target} es más fácil de conocer, también la dificultad), podría comenzar a buscar el nonce del bloque $N+1$ por adelantado, obteniendo así una ventaja en la carrera por minar el siguiente bloque. \\
+
+Por esta razón, el bloque génesis en Bitcoin fue diseñado de forma impredecible, de modo que ningún minero pudiera comenzar a minar el segundo bloque antes de que el primero estuviera establecido públicamente.
+
+Dado que el protocolo analizado no considera este tipo de ataques, no es necesario ``hardcodear'' un bloque génesis impredecible. \\
+
+Como análisis personal, sin demostración formal, tiene sentido no preocuparse por estos ataques: salvo que el adversario posea un poder de cómputo muy grande (pero menor al 51\%), el ataque es extremadamente difícil de realizar. Porque predecir el hash del bloque $N$ es muy dificil, lo que vuelve poco rentable minar por adelantado sin garantías sobre el contenido real del bloque anterior.
+
 \section*{Ejercicio 3}
 
 \subsection*{Punto A}
