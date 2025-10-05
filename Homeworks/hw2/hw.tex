@@ -54,13 +54,13 @@
 
 \subsection*{Punto A}
 
-El propósito de una Public Key Infrastructure es incrementar la confianza entre los participantes de una red. Permite verificar y confiar en las firmas digitales emitidas por la entidad certificadora, garantizando la autenticidad de los mensajes y la identidad de los participantes.  
+El propósito de una Public Key Infrastructure es incrementar la confianza entre los participantes de una red. Permite verificar y confiar en las firmas digitales emitidas por la entidad certificadora, garantizando la autenticidad de los mensajes y la identidad de los participantes.
 
-La PKI lo que nos garantiza es que dada una clave publica, esta se puede asociar a una entidad/ persona. Si el problema de concenso requiere asociar a una clave a una entidad, entonces vamos a necesitar tener una PKI. 
+La PKI lo que nos garantiza es que, dada una clave pública, esta se puede asociar a una entidad/persona. Si el problema de consenso requiere asociar a una clave a una entidad, entonces vamos a necesitar tener una PKI.
 
-En un protocolo con Public Key Infrastructure, una "autoridad certificadora" va a ser el que atestigue que una clave publica esta asociada a una entidad/ persona. 
+En un protocolo con Public Key Infrastructure, una "autoridad certificadora" va a ser la que atestigüe que una clave pública está asociada a una entidad/persona.
 
-Un ejemplo en el cual nos beneficia tener una PKI es para para poder resolver los problemas de consenso bizantino con una mayor cantidad de participantes maliciosos. En la siguiente tabla comparo la cantidad de participantes maliciosos máximos que podemos tener para llegar al consenso si no tenemos setup vs si lo tenemos:
+Un ejemplo en el cual nos beneficia tener una PKI es para poder resolver los problemas de consenso bizantino con una mayor cantidad de participantes maliciosos. En la siguiente tabla comparo la cantidad de participantes maliciosos máximos que podemos tener para llegar al consenso si no tenemos setup vs si lo tenemos:
 
 \begin{center}
 \begin{tabular}{|>{\centering\arraybackslash}m{3cm}|
@@ -78,46 +78,49 @@ Broadcast & $\frac{N}{3} - 1$ & $N - 1$ \\
 \end{tabular}
 \end{center}
 
-Pero si nuestro problema de concenso se puede resolver sin necesidad de asociar una firma a una entidad, la PKI no es la que garantiza las propiedades de las firmas digitales. 
+Pero si nuestro problema de consenso se puede resolver sin necesidad de asociar una firma a una entidad, la PKI no es la que garantiza las propiedades de las firmas digitales.
 
-Propiedades de las firmas digitales como existential unforgeability, no dependen de la existencia de una PKI, sino del esquema de firma digital en sí y de la robustez de los algoritmos criptográficos que se usen. Un esquema de firmas inseguro, va a seguir siendolo aunque usemos PKI, y uno seguro va a seguir siendolo aunque no usemos PKI. 
+Propiedades de las firmas digitales como existential unforgeability no dependen de la existencia de una PKI, sino del esquema de firma digital en sí y de la robustez de los algoritmos criptográficos que se usen. Un esquema de firmas inseguro va a seguir siéndolo aunque usemos PKI, y uno seguro va a seguir siéndolo aunque no usemos PKI.
 
 \subsection*{Punto B}
 
-En la red de Bitcoin, a diferencia de un sistema distribuido tradicional, los nodos no tienen identidades fijas ni están registrados. 
+En la red de Bitcoin, a diferencia de un sistema distribuido tradicional, los nodos no tienen identidades fijas ni están registrados.
 La red es abierta y dinámica, cualquiera puede unirse o salir en cualquier momento, y no existe un listado de participantes.
 
-Por este motivo, el protocolo de consenso de la blockchain funciona sin depender de una PKI. 
-Para el problema de descidir quien va a agregar un nuevo bloque a la cadena, no es necesario asociar una clave pública a una entidad específica para autenticar a los mineros. La selección de quién propone el siguiente bloque se resuelve mediante el mecanismo de Proof of Work, que asegura tanto la autenticidad de los bloques como el consenso sobre el estado de la cadena.
+Por este motivo, el protocolo de consenso de la blockchain funciona sin depender de una PKI.
+Para el problema de decidir quién va a agregar un nuevo bloque a la cadena, no es necesario asociar una clave pública a una entidad específica para autenticar a los mineros.
+La selección de quién propone el siguiente bloque se resuelve mediante el mecanismo de Proof of Work, que asegura tanto la autenticidad de los bloques como el consenso sobre el estado de la cadena.
 
-Por más que las transacciones de Bitcoin usan firmas digitales basadas en el esquema ECDSA, no es necesario asociar una firma en una transacción a un usuario. 
-Cuando un usuario crea una transacción, la firma con su clave privada, y los demás nodos pueden verificar la validez de esa firma usando la transacción y la clave pública del firmante. 
-Esto garantiza que sólo quien posee la clave privada correspondiente a una dirección puede autorizar el gasto de los fondos asociados a ella, no es necesario asociar la transacción a un ente para determinar que fue valida. 
+Por más que las transacciones de Bitcoin usan firmas digitales basadas en el esquema ECDSA, no es necesario asociar una firma en una transacción a un usuario.
+Cuando un usuario crea una transacción, la firma con su clave privada, y los demás nodos pueden verificar la validez de esa firma usando la transacción y la clave pública del firmante.
+Esto garantiza que sólo quien posee la clave privada correspondiente a una dirección puede autorizar el gasto de los fondos asociados a ella; no es necesario asociar la transacción a un ente para determinar que fue válida.
 
-En Bitcoin no existe ninguna autoridad central que emita o certifique las claves públicas empleadas para firmar transacciones. 
+En Bitcoin no existe ninguna autoridad central que emita o certifique las claves públicas empleadas para firmar transacciones.
 Cada usuario genera localmente su propio par de claves, sin que éstas deban estar vinculadas a identidades “reales”.
 
-Por lo tanto, Bitcoin no asume una PKI, ya que la seguridad de sus transacciones dependen de las propiedades de seguridad que nos dan las firmas digitales y de Proof of Work para el consenso.  
+Por lo tanto, Bitcoin no asume una PKI, ya que la seguridad de sus transacciones depende de las propiedades de seguridad que nos dan las firmas digitales y de Proof of Work para el consenso.
 
 \section*{Ejercicio 2}
 
-El algoritmo arranca desde el bloque $\varepsilon$, en lugar de partir de un bloque génesis impredecible, porque asume explícitamente que no pueden ocurrir ataques de pre-cómputo \href{https://dl.acm.org/doi/10.1145/3653445#fn13}{(Fuente)}.
+El algoritmo arranca desde el bloque $\varepsilon$, en lugar de partir de un bloque génesis impredecible, porque asume explícitamente que no pueden ocurrir ataques de pre\-cómputo \href{https://dl.acm.org/doi/10.1145/3653445#fn13}{(Fuente)}.
 
-En un ataque de pre-cómputo, un minero malicioso intenta minar bloques válidos por adelantado con el objetivo de revertir o insertar transacciones en la cadena, o bien de aumentar su probabilidad de encontrar el nonce y así imponer sus propios bloques en la cadena. 
+En un ataque de pre\-cómputo, un minero malicioso intenta minar bloques válidos por adelantado con el objetivo de revertir o insertar transacciones en la cadena, o bien de aumentar su probabilidad de encontrar el nonce y así imponer sus propios bloques en la cadena.
 
-Llevar a cabo un ataque de este tipo no es trivial en una blockchain basada en PoW, ya que el contenido del bloque $N+1$ depende del bloque $N$, porque el bloque $N + 1$ debe apuntar al hash del bloque anterior. Si un atacante pudiera predecir el hash del bloque $N$ (y, dado que el \emph{target} es más fácil de conocer, también la dificultad), podría comenzar a buscar el nonce del bloque $N+1$ por adelantado, obteniendo así una ventaja en la carrera por minar el siguiente bloque. \\
+Llevar a cabo un ataque de este tipo no es trivial en una blockchain basada en PoW, ya que el contenido del bloque $N+1$ depende del bloque $N$, porque el bloque $N+1$ debe apuntar al hash del bloque anterior. 
+Si un atacante pudiera predecir el hash del bloque $N$ (y, dado que el target es más fácil de conocer, también la dificultad), podría comenzar a buscar el nonce del bloque $N+1$ por adelantado, obteniendo así una ventaja en la carrera por minar el siguiente bloque. \\
 
 Por esta razón, el bloque génesis en Bitcoin fue diseñado de forma impredecible, de modo que ningún minero pudiera comenzar a minar el segundo bloque antes de que el primero estuviera establecido públicamente.
 
 Dado que el protocolo analizado no considera este tipo de ataques, no es necesario ``hardcodear'' un bloque génesis impredecible. \\
 
-Como análisis personal, sin demostración formal, tiene sentido no preocuparse por estos ataques: salvo que el adversario posea un poder de cómputo muy grande (pero menor al 51\%), el ataque es extremadamente difícil de realizar. Porque predecir el hash del bloque $N$ es muy dificil, lo que vuelve poco rentable minar por adelantado sin garantías sobre el contenido real del bloque anterior.
+Como análisis personal, sin demostración formal, tiene sentido no preocuparse por estos ataques: salvo que el adversario posea un poder de cómputo muy grande (pero menor al 51\%), el ataque es extremadamente difícil de realizar. 
+Porque predecir el \textit{hash} del bloque $N$ es muy difícil, lo que vuelve poco rentable minar por adelantado sin garantías sobre el contenido real del bloque anterior.
 
 \section*{Ejercicio 3}
 
 \subsection*{Punto A}
 
-Mi idea es usar los prefijos de la cadena y quedarme siempre con la cabeza de ese prefijo para verificar la validez de los bloques del más viejo al más reciente.  
+Mi idea es usar los prefijos de la cadena y quedarme siempre con la cabeza de ese prefijo para verificar la **validez** de los bloques del más viejo al más reciente.  
 
 \begin{algorithm}[H]
 \caption{Validación de la cadena desde el bloque más viejo}
@@ -146,20 +149,21 @@ Mi idea es usar los prefijos de la cadena y quedarme siempre con la cabeza de es
 
 \subsection*{Punto B}
 
-Comenzar la validación desde el primer bloque (el más antiguo) garantiza que cada bloque que consideramos válido realmente lo es, ya que se verifica la validez de toda la cadena de manera constructiva. Esto evita confiar en bloques mas viejos para validar bloques mas nuevos, lo cual podría ocultar errores si un bloque apunta a otro inválido. En cambio al verificar del mas viejo al mas nuevo, nos aseguramos que todos los bloques que afirmamos que son validos realmente lo son.
-Te da un invariante el algoritmo, de que todo bloque considerado como valido realmente lo es y no que es valido asumiendo que los bloques mas viejos, que todavía falta verificar, tambien lo son. 
+Comenzar la validación desde el primer bloque (el más antiguo) garantiza que cada bloque que consideramos válido realmente lo es, ya que se verifica la validez de toda la cadena de manera constructiva. Esto evita confiar en bloques más viejos para validar bloques más nuevos, lo cual podría ocultar errores si un bloque apunta a otro inválido. En cambio, al verificar del más viejo al más nuevo, nos aseguramos de que todos los bloques que afirmamos que son válidos realmente lo son.
+Te da un invariante el algoritmo: que todo bloque considerado como válido realmente lo es, y no que es válido asumiendo que los bloques más viejos, que todavía falta verificar, también lo son.
 
-Una desventaja de comenzar la validación desde el primer bloque es que, en la práctica, los errores de validez son mucho más probables en los bloques más recientes. Por ejemplo, validar el bloque génesis no aporta demasiado, ya que siempre se asume correcto y es altamente improbable que allí esté el error. En consecuencia, este enfoque podría implicar un costo innecesario de verificación de muchos bloques `viejos'' antes de detectar una invalidez en un bloque más reciente. En términos de complejidad asintótica, ambos algoritmos tienen la misma cota superior (en el peor caso deben verificar toda la cadena). Sin embargo, en la práctica resulta más eficiente comenzar desde el bloque más reciente hacia atrás, ya que aumenta la probabilidad de encontrar un bloque inválido más temprano y, por lo tanto, reducir la cantidad de bloques que es necesario verificar.
+Una desventaja de comenzar la validación desde el primer bloque es que, en la práctica, los errores de validez son mucho más probables en los bloques más recientes. Por ejemplo, validar el bloque génesis no aporta demasiado, ya que siempre se asume correcto y es altamente improbable que allí esté el error. En consecuencia, este enfoque podría implicar un costo innecesario de verificación de muchos bloques viejos antes de detectar una invalidez en un bloque más reciente. En términos de complejidad asintótica, ambos algoritmos tienen la misma cota superior (en el peor caso deben verificar toda la cadena). Sin embargo, en la práctica resulta más eficiente comenzar desde el bloque más reciente hacia atrás, ya que aumenta la probabilidad de encontrar un bloque inválido más temprano y, por lo tanto, reducir la cantidad de bloques que es necesario verificar.
 
 \section*{Ejercicio 4}
 \subsection*{Punto A}
-El que pierde va a ser el que pague la recompensa al que gano. 
+El que pierde va a ser el que pague la recompensa al que ganó.
 
-Para seguir el patron de pull over push, el ganador va a tener que llamar a withdraw, en vez de hacerle un send o transfer. 
+Para seguir el patrón de pull over push, el ganador va a tener que llamar a \texttt{withdraw}, en vez de hacerle un \texttt{send} o \texttt{transfer}.
 
-Las estructuras de datos que uso para guardar que eligio cada uno es un booleano para la opcion que elige el primero, y para el segundo no arme ninguna explicita porque va a venir dado por el parametro de jugar.
+Las estructuras de datos que uso para guardar qué eligió cada uno son un booleano para la opción que elige el primero, y para el segundo no armé ninguna explícita porque va a venir dado por el parámetro de jugar.
 
-El primer código que hicimos con Segundo Sacchi tiene el problema de que, si el jugador 2 puede ver en la blockchain qué valor envió el jugador 1 al contrato, entonces siempre puede elegir la opción que le asegure ganar. Es un "ataque" del estilo front running attack. 
+El primer código que hicimos con Segundo Sacchi tiene el problema de que, si el jugador 2 puede ver en la blockchain qué valor envió el jugador 1 al contrato, entonces siempre puede elegir la opción que le asegure ganar. Es un ``ataque'' del estilo front-running attack.
+
 
 \begin{lstlisting}[language=Java]
     // SPDX-License-Identifier: GPL-3.0
@@ -210,14 +214,14 @@ Para solucionar el problema de que el segundo jugador pueda ver la jugada del pr
 Sin embargo, esta solución tiene una limitación: si el jugador 1 usa siempre el mismo hash para la misma elección, el jugador 2 podría deducir su jugada a partir de la segunda partida al reconocer el hash.\\
 Para evitar este problema, el hash enviado al contrato tiene que ser variable entre juego y juego.
 
-Una idea para lograr esto es que, al jugar, cada participante envíe un string de longitud fija donde el primer carácter sea 0 o 1, y el resto sea una cadena aleatoria que cambie entre partida y partida. Esta cadena sería firmada con una clave pública provista por el contrato, para que el contrato sea el unico que pueda descifrar el mensaje con su clave privada. 
+Una idea para lograr esto es que, al jugar, cada participante envíe un string de longitud fija donde el primer carácter sea 0 o 1, y el resto sea una cadena aleatoria que cambie entre partida y partida. Esta cadena sería firmada con una clave pública provista por el contrato, para que el contrato sea el único que pueda descifrar el mensaje con su clave privada. 
 De esta forma, aunque el jugador 2 vea la transacción del jugador 1, no puede deducir su jugada porque cada envío se verá diferente y no reutilizable entre partidas.
 
-El problema con una implementación naive de esta idea, es que si con el formato de mi primera solución, si juega el jugador 1 y desencripto lo que manda a la espera de que juegue el jugador 2, la variable desencriptada podría ser vista por el jugador 2. Por lo que necesito esperar a que jueguen los dos para poder desencriptar los envios.
+El problema con una implementación naive de esta idea es que, con el formato de mi primera solución, si juega el jugador 1 y desencripto lo que manda a la espera de que juegue el jugador 2, la variable desencriptada podría ser vista por el jugador 2. Por lo que necesito esperar a que jueguen los dos para poder desencriptar los envíos.
 
-Investigando, esta solución que se me ocurrió, es parecida al patrón \href{https://medium.com/coinmonks/commit-reveal-scheme-in-solidity-c06eba4091bb}{(Commit-Reveal)}. 
+Investigando, esta solución que se me ocurrió es parecida al patrón \href{https://medium.com/coinmonks/commit-reveal-scheme-in-solidity-c06eba4091bb}{(Commit-Reveal)}. 
 
-Este patrón funciona dividiendo el juego en dos fases: en la primera, cada jugador le manda al contrato un hash de su elección combinada con un valor aleatorio (nonce), de modo que el otro jugador no puede deducir la jugada observando la transacción. Una vez que ambos ya commitearon, en la segunda etapa, cada jugador revela su elección y el nonce que eligio, y el contrato verifica que coincida con el hash previamente enviado. Este esquema evita el front-running porque nadie puede cambiar su jugada después de conocer la del rival ni inferirla antes de la revelación.
+Este patrón funciona dividiendo el juego en dos fases: en la primera, cada jugador le manda al contrato un hash de su elección combinada con un valor aleatorio (un nonce), de modo que el otro jugador no puede deducir la jugada observando la transacción. Una vez que ambos ya commitearon, en la segunda etapa, cada jugador revela su elección y elnonce que eligió, y el contrato verifica que coincida con el hash previamente enviado. Este esquema evita el front-running porque nadie puede cambiar su jugada después de conocer la del rival ni inferirla antes de la revelación.
 
 Así que la solución para arreglar este problema va a seguir este patrón de diseño:
 
@@ -291,28 +295,29 @@ Así que la solución para arreglar este problema va a seguir este patrón de di
 \end{lstlisting}
 
 \subsection*{Punto B}
-El costo de deployear el contrato es de 904,236 gas \href{https://sepolia.etherscan.io/tx/0xada5c14a0889e3d5cbb4d5b3b86e3e98e126095b995e538e33109778e51f670c}{Link a la creación}.
+\begin{itemize}
+    \item El costo de deployear el contrato es de 904,236 gas. \href{https://sepolia.etherscan.io/tx/0xada5c14a0889e3d5cbb4d5b3b86e3e98e126095b995e538e33109778e51f670c}{Link a la creación}.
+    
+    \item El costo de interactuar con \texttt{withdraw} es de 29,930 gas. \href{https://sepolia.etherscan.io/tx/0xd9e2097eb704afd6eafb454ca006b86f11eb5ff2cea64eacea869429b6ff8223}{Link al \texttt{withdraw}}.
+    
+    \item El costo de jugar es de 72,150 gas. \href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a jugar}.
+    
+    \item El costo de revelar para el primer jugador es de 53,466 gas. \href{https://sepolia.etherscan.io/tx/0x07437d0462c71bd80d5774399a499576efcee9750f058ca6dd6e55115b84d9eb}{Link a revelar del primer jugador}.
+    
+    \item El costo de revelar para el segundo jugador es de 62,808 gas. \href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a revelar del segundo jugador}.
+\end{itemize}
 
-El costo de interactuar con withdraw es de 29,930 gas \href{https://sepolia.etherscan.io/tx/0xd9e2097eb704afd6eafb454ca006b86f11eb5ff2cea64eacea869429b6ff8223}{Link al withdraw}
-
-El costo de jugar es de 72,150 gas. 
-\href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a jugar}
-
-El costo de revelar para el primer jugador es de 53,466 gas \href{https://sepolia.etherscan.io/tx/0x07437d0462c71bd80d5774399a499576efcee9750f058ca6dd6e55115b84d9eb}{Link a jugar}
-
-El costo de revelar para el segundo jugador es de 62,808 gas \href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a revelar del segundo jugador}
 
 
-Si consideramos como "justo" a que ambos jugadores paguen la misma cantidad de gas por jugar, este contrato va a ser "injusto", porque el segundo jugador en revelar, va a tener que pagar un poquito más de gas a la hora de revelar, porque con el gas que pague se va a ejecutar la parte de reveal en la que se decide el ganador. En cambio, el primer jugador que haga reveal no va a tener que pagar por esa parte. 
+Si consideramos como "justo" que ambos jugadores paguen la misma cantidad de gas por jugar, este contrato va a ser "injusto", porque el segundo jugador en revelar va a tener que pagar un poquito más de gas a la hora de revelar, porque con el gas que pague se va a ejecutar la parte de \texttt{reveal} en la que se decide el ganador. En cambio, el primer jugador que haga \texttt{reveal} no va a tener que pagar por esa parte. 
 
-Dos formas que se me ocurren para que sea más justo es que se compense el gas que consume el segundo jugador en hacer reveal en el premio que va a recibir o se le devuelve de lo que jugo. Otra opción sería hacer una tercera función que revele el ganador, que tengan que ejecutar ambos para decidir el ganador. 
+Dos formas que se me ocurren para que sea más justo son que se compense el gas que consume el segundo jugador al hacer \texttt{reveal} en el premio que va a recibir o que se le devuelva de lo que jugó. Otra opción sería hacer una tercera función que revele el ganador, que tengan que ejecutar ambos para decidir el ganador. 
 
 Una forma de gastar menos gas en mi contrato puede ser cambiando los tipos de algunas variables o parámetros, por ejemplo en la función \texttt{revelar}, 
-en vez de recibir un \texttt{string memory}, recibir un \texttt{bytes32}. 
-Esto ahorra gas porque \texttt{string} es un tipo dinámico, y el contrato necesita guardar también su longitud y manejar su contenido de forma más costosa. 
+en vez de recibir un \texttt{string memory}, recibir un \texttt{bytes32}. Esto ahorra gas porque \texttt{string} es un tipo dinámico, y el contrato necesita guardar también su longitud y manejar su contenido de forma más costosa. 
 En cambio, \texttt{bytes32} tiene un tamaño fijo y se guarda de manera más simple y directa, usando menos operaciones en la EVM.
 
-Otra forma de ahorrar gas, podría ser empaquetando varias variables chicas en una sola.  
+Otra forma de ahorrar gas podría ser empaquetando varias variables chicas en una sola.  
 Por ejemplo, en mi contrato tengo:
 \begin{itemize}
     \item \texttt{cantidad\_jugadores} (\texttt{uint32})
@@ -334,12 +339,165 @@ que es una de las operaciones más costosas en gas. \href{https://rareskills.io/
 \subsection*{Punto C}
 El principal problema de seguridad de mi contrato es que depende completamente del comportamiento honesto y coordinado de los dos jugadores. El flujo del juego puede quedar bloqueado si al menos uno de los participantes deja de interactuar con el contrato.
 
-Por ejemplo, si uno de los jugadores llama a jugar pero el otro nunca realiza la llamada a jugar o revelar, los fondos del primer jugador quedan atrapados en el contrato y no pueden recuperarse. Esto introduce un riesgo de denial-of-service para el jugador honesto, y para el resto de personas que quieran interactuar con el contrato. 
+Por ejemplo, si uno de los jugadores llama a jugar pero el otro nunca realiza la llamada a jugar o revelar, los fondos del primer jugador quedan atrapados en el contrato y no pueden recuperarse. Esto introduce un riesgo de denial of service para el jugador honesto, y para el resto de personas que quieran interactuar con el contrato. 
 
-Además, si dos jugadores maliciosos entran en la partida primero y luego nunca revelan sus valores, pueden impedir que nuevos jugadores puedan interactuar con el contrato para jugar, siendo este otro ataque de Denial Of Service. 
+Además, si dos jugadores maliciosos entran en la partida primero y luego nunca revelan sus valores, pueden impedir que nuevos jugadores puedan interactuar con el contrato para jugar, siendo este otro ataque de Denial Of Service.
 
 \subsection*{Punto D}
+Siendo el codigo de Tiago Guerra: 
+\begin{lstlisting}[language=Java]
+    pragma solidity >=0.7.0 <0.9.0;
+    
+    
+    contract MatchingPennies {
+        address public player1;
+        address public player2;
+        address public winner;
+    
+    
+        uint256 public player1Bid;
+        uint256 public player2Bid;
+        uint256 player1Number = 11; // uso 11 como "null"
+        uint256 player2Number = 11; // uso 11 como "null"
+    
+    
+        // flags de si ya commitearon / revelaron
+        bool private didCommit1;
+        bool private didCommit2;
+        bool private didReveal1;
+        bool private didReveal2;
+    
+    
+        // commits
+        bytes32 private commit1;
+        bytes32 private commit2;
+    
+    
+        event welcomeToTheGame(string msg);
+        event possibleValues(string msg);
+        event commitReceived(string msg);
+        event moveRevealed(address player, uint256 number);
+        event gameResults(string msg, address winner);
+    
+    
+        function joinGame() public {
+            if (player1 == address(0)){
+                require(msg.sender != player2, "Already player2");
+                player1 = msg.sender;
+            } else if(player2 == address(0)){
+                require(msg.sender != player1, "Already player1");
+                player2 = msg.sender;
+            } else {
+                revert("There are already two players");
+            }
+            emit welcomeToTheGame("Welcome to the game");
+            emit possibleValues("0 or 1");
+        }  
+    
+    
+        function makeBid() public payable {
+            require(msg.sender == player1 || msg.sender == player2, "You are not a player");
+            require(msg.value == 0.05 ether, "You have to play with 0.05 ether");
+            require(player1 != address(0) && player2 != address(0), "Insufficient players");
+    
+    
+            if (msg.sender == player1) {
+                require(player1Bid == 0, "P1 already bid");
+                player1Bid = msg.value;
+            } else if (msg.sender == player2) {
+                require(player2Bid == 0, "P2 already bid");
+                player2Bid = msg.value;
+            }
+        }
+    
+    
+        function commitMove(bytes32 commit) external {
+            require(msg.sender == player1 || msg.sender == player2, "You are not a player");
+            require(player1Bid != 0 && player2Bid != 0, "Both players have to make a bid");
+            if (msg.sender == player1) {
+                require(!didCommit1, "P1 already committed");
+                commit1 = commit;
+                didCommit1 = true;
+            } else {
+                require(!didCommit2, "P2 already committed");
+                commit2 = commit;
+                didCommit2 = true;
+            }
+            emit commitReceived("Committed succesfully");
+            }
+    
+    
+        function revealMove(uint8 choice, string memory salt) external {
+            require(msg.sender == player1 || msg.sender == player2, "You are not a player");
+            require(didCommit1 && didCommit2, "Both must commit first");
+            require(choice == 0 || choice == 1, "Choice must be 0 or 1");
+    
+    
+            bytes32 expected = keccak256(abi.encodePacked(choice, salt));
+    
+    
+            if (msg.sender == player1) {
+                require(!didReveal1, "P1 already revealed");
+                require(expected == commit1, "P1 commit mismatch");
+                didReveal1 = true;
+                player1Number = choice;
+                emit moveRevealed(player1, player1Number);
+            } else {
+                require(!didReveal2, "P2 already revealed");
+                require(expected == commit2, "P2 commit mismatch");
+                didReveal2 = true;
+                player2Number = choice;
+                emit moveRevealed(player2, player2Number);
+            }
+        }
+    
+    
+        function winnerResults() public {
+            require(msg.sender == player1 || msg.sender == player2, "You are not a player");
+            require(player1Number != 11 && player2Number != 11, "Both players have to reveal their number");
+            if(player1Number == player2Number){
+                winner = player1;
+                payable(player1).transfer(player1Bid + 0.01 ether); // 0.6 ether
+                payable(player2).transfer(player2Bid - 0.01 ether); // 0.4 ether
+            } else{
+                winner = player2;
+                payable(player2).transfer(player2Bid + 0.01 ether); // 0.6 ether
+                payable(player1).transfer(player1Bid - 0.01 ether); // 0.4 ether
+            }
+            emit gameResults("The winner is:", winner);
+    
+    
+            //reseteo todo para una nueva ronda
+            _resetGame();
+            }
+    
+    
+        function _resetGame() private {
+            player1 = address(0);
+            player2 = address(0);
+            winner = address(0);
+    
+    
+            player1Bid = 0;
+            player2Bid = 0;
+    
+    
+            player1Number = 11;
+            player2Number = 11;
+    
+    
+            commit1 = bytes32(0);
+            commit2 = bytes32(0);
+            didCommit1 = false;
+            didCommit2 = false;
+            didReveal1 = false;
+            didReveal2 = false;
+        }
+    }
+\end{lstlisting}
+Tiene el mismo problema de Denial Of Service que tengo yo en mi código, tanto para que una persona bloquee a otra a que juegue o pueda retirar lo que puso, o hacer que dos personas hagan \texttt{joinGame} y le impidan a cualquier otra persona usar el contrato. Una desventaja que tiene el contrato de Tiago versus el mío, es que en mi contrato, para que dos hagan un Denial Of Service al resto, al menos tienen que poner algo de ether; en cambio, en el de Tiago lo pueden hacer "gratis", si obviamos los costos del gas. 
 
 \subsection*{Punto E}
 \href{https://sepolia.etherscan.io/address/0x52ad35083f7be6a2d0a96dff34a7940694ec223f}{Link al contrato con una prueba de que funcione el juego que hicimos con Tiago Guerra}.
 \end{document}
+
