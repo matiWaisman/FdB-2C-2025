@@ -1,3 +1,4 @@
+\UseRawInputEncoding
 \documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb}
@@ -16,10 +17,28 @@
     basicstyle=\ttfamily\small,
     breaklines=true,       
     breakatwhitespace=false,
+    showstringspaces=false,
     frame=single,
     keywordstyle=\color{blue},
     commentstyle=\color{green!50!black},
     stringstyle=\color{red},
+}
+\lstset{
+    inputencoding=utf8,
+    extendedchars=true,
+    literate=
+      {á}{{\'a}}1
+      {é}{{\'e}}1
+      {í}{{\'i}}1
+      {ó}{{\'o}}1
+      {ú}{{\'u}}1
+      {Á}{{\'A}}1
+      {É}{{\'E}}1
+      {Í}{{\'I}}1
+      {Ó}{{\'O}}1
+      {Ú}{{\'U}}1
+      {ñ}{{\~n}}1
+      {Ñ}{{\~N}}1
 }
 \geometry{margin=1in}
 
@@ -128,7 +147,7 @@ Mi idea es usar los prefijos de la cadena y quedarme siempre con la cabeza de es
 \subsection*{Punto B}
 
 Comenzar la validación desde el primer bloque (el más antiguo) garantiza que cada bloque que consideramos válido realmente lo es, ya que se verifica la validez de toda la cadena de manera constructiva. Esto evita confiar en bloques mas viejos para validar bloques mas nuevos, lo cual podría ocultar errores si un bloque apunta a otro inválido. En cambio al verificar del mas viejo al mas nuevo, nos aseguramos que todos los bloques que afirmamos que son validos realmente lo son.
-Te da un invariante el algoritmo.
+Te da un invariante el algoritmo, de que todo bloque considerado como valido realmente lo es y no que es valido asumiendo que los bloques mas viejos, que todavía falta verificar, tambien lo son. 
 
 Una desventaja de comenzar la validación desde el primer bloque es que, en la práctica, los errores de validez son mucho más probables en los bloques más recientes. Por ejemplo, validar el bloque génesis no aporta demasiado, ya que siempre se asume correcto y es altamente improbable que allí esté el error. En consecuencia, este enfoque podría implicar un costo innecesario de verificación de muchos bloques `viejos'' antes de detectar una invalidez en un bloque más reciente. En términos de complejidad asintótica, ambos algoritmos tienen la misma cota superior (en el peor caso deben verificar toda la cadena). Sin embargo, en la práctica resulta más eficiente comenzar desde el bloque más reciente hacia atrás, ya que aumenta la probabilidad de encontrar un bloque inválido más temprano y, por lo tanto, reducir la cantidad de bloques que es necesario verificar.
 
@@ -138,9 +157,9 @@ El que pierde va a ser el que pague la recompensa al que gano.
 
 Para seguir el patron de pull over push, el ganador va a tener que llamar a withdraw, en vez de hacerle un send o transfer. 
 
-Si se logea el evento y se puede enterar todo el mundo para evitar que el jugador 2 siempre espere a que juegue el 1 y luego lea la blockchain para ver el valor que eligio. El usuario va a mandar el mensaje junto a un string aleatorio, siempre de la misma longitud, y despues el contrato va a desencriptarlo con la clave publica. 
+Las estructuras de datos que uso para guardar que eligio cada uno es un booleano para la opcion que elige el primero, y para el segundo no arme ninguna explicita porque va a venir dado por el parametro de jugar.
 
-El primer código que hicimos con Segundo Sacchi tiene el problema de que si el jugador 2 ve lo que manda el jugador 1 al contrato, va a ganar siempre.  
+El primer código que hicimos con Segundo Sacchi tiene el problema de que, si el jugador 2 puede ver en la blockchain qué valor envió el jugador 1 al contrato, entonces siempre puede elegir la opción que le asegure ganar. Es un "ataque" del estilo front running attack. 
 
 \begin{lstlisting}[language=Java]
     // SPDX-License-Identifier: GPL-3.0
@@ -152,11 +171,11 @@ El primer código que hicimos con Segundo Sacchi tiene el problema de que si el 
         address addr_segundo; 
         bool valor_primero;
         mapping(address => uint256) balance; 
-        address[] public customers;
 
         event Withdrawal(address customer);
 
         function withdraw() public {
+            require(balance[msg.sender] > 0, "No hay balance para retirar");
             uint256 b = balance[msg.sender];
             balance[msg.sender] = 0;
             payable(msg.sender).transfer(b);
@@ -164,7 +183,7 @@ El primer código que hicimos con Segundo Sacchi tiene el problema de que si el 
         }
 
         function jugar(bool valor) public payable{
-            require(msg.value >= 0.01 ether); // Si manda mas se lo queda la casa como donacion
+            require(msg.value >= 0.01 ether, "El minimo para jugar es 0,01 eth"); // Si manda mas se lo queda la casa como donacion
             if(jugo_primero){
                 // Tenemos a los dos jugadores
                 jugo_primero = false; 
@@ -186,6 +205,141 @@ El primer código que hicimos con Segundo Sacchi tiene el problema de que si el 
     }
 \end{lstlisting}
 
-Por lo que 
+Para solucionar el problema de que el segundo jugador pueda ver la jugada del primero, se podría enviar la elección hasheada con la clave pública del contrato, de modo que sólo el contrato pueda ver el valor enviado con su clave privada. Así el jugador 2 no podría ver la jugada antes de decidir la suya.
 
+Sin embargo, esta solución tiene una limitación: si el jugador 1 usa siempre el mismo hash para la misma elección, el jugador 2 podría deducir su jugada a partir de la segunda partida al reconocer el hash.\\
+Para evitar este problema, el hash enviado al contrato tiene que ser variable entre juego y juego.
+
+Una idea para lograr esto es que, al jugar, cada participante envíe un string de longitud fija donde el primer carácter sea 0 o 1, y el resto sea una cadena aleatoria que cambie entre partida y partida. Esta cadena sería firmada con una clave pública provista por el contrato, para que el contrato sea el unico que pueda descifrar el mensaje con su clave privada. 
+De esta forma, aunque el jugador 2 vea la transacción del jugador 1, no puede deducir su jugada porque cada envío se verá diferente y no reutilizable entre partidas.
+
+El problema con una implementación naive de esta idea, es que si con el formato de mi primera solución, si juega el jugador 1 y desencripto lo que manda a la espera de que juegue el jugador 2, la variable desencriptada podría ser vista por el jugador 2. Por lo que necesito esperar a que jueguen los dos para poder desencriptar los envios.
+
+Investigando, esta solución que se me ocurrió, es parecida al patrón \href{https://medium.com/coinmonks/commit-reveal-scheme-in-solidity-c06eba4091bb}{(Commit-Reveal)}. 
+
+Este patrón funciona dividiendo el juego en dos fases: en la primera, cada jugador le manda al contrato un hash de su elección combinada con un valor aleatorio (nonce), de modo que el otro jugador no puede deducir la jugada observando la transacción. Una vez que ambos ya commitearon, en la segunda etapa, cada jugador revela su elección y el nonce que eligio, y el contrato verifica que coincida con el hash previamente enviado. Este esquema evita el front-running porque nadie puede cambiar su jugada después de conocer la del rival ni inferirla antes de la revelación.
+
+Así que la solución para arreglar este problema va a seguir este patrón de diseño:
+
+\begin{lstlisting}[language=Java]
+    // SPDX-License-Identifier: GPL-3.0
+    pragma solidity >=0.7.0 <0.9.0;
+    
+    contract Pennies{
+        uint32 cantidad_jugadores = 0; 
+        address addr_primero;
+        address addr_segundo; 
+        bytes32 hash_primero;
+        bytes32 hash_segundo;
+        bool valor_primero;
+        bool valor_segundo;
+        uint32 cantidad_revelados = 0;
+        mapping(address => uint256) balance; 
+    
+        event Withdrawal(address customer);
+    
+        function withdraw() public {
+            require(balance[msg.sender] > 0, "No hay balance para retirar");
+            uint256 b = balance[msg.sender];
+            balance[msg.sender] = 0;
+            payable(msg.sender).transfer(b);
+            emit Withdrawal(msg.sender);
+        }
+    
+        function jugar(bytes32 hash) public payable{
+            require(msg.value >= 0.01 ether, "El minimo para jugar es 0,01 eth"); // Si manda mas se lo queda la casa como donacion
+            require(cantidad_jugadores < 2, "Ya hay dos jugadores jugando");
+            if(cantidad_jugadores == 0){
+                hash_primero = hash;
+                addr_primero = msg.sender;
+                
+            }
+            if(cantidad_jugadores == 1){
+                hash_segundo = hash; 
+                addr_segundo = msg.sender;
+            }
+            cantidad_jugadores += 1;
+        }
+    
+        function revelar(bool valor, string memory nonce) public {
+            require(cantidad_jugadores == 2, "No hay suficientes jugadores para revelar");
+            require(msg.sender == addr_primero || msg.sender == addr_segundo, "No estas en la partida");
+            if (msg.sender == addr_primero) {
+                require(keccak256(abi.encodePacked(valor, nonce)) == hash_primero,
+                        "Reveal invalido");
+                valor_primero = valor;
+            } 
+            if (msg.sender == addr_segundo) {
+                require(keccak256(abi.encodePacked(valor, nonce)) == hash_segundo,
+                        "Reveal invalido");
+                valor_segundo = valor;
+            }
+            cantidad_revelados += 1;
+            if(cantidad_revelados == 2){
+                if(valor_primero == valor_segundo){
+                    balance[addr_primero] += 0.02 ether;  
+                }
+                else{
+                    balance[addr_segundo] += 0.02 ether;
+                }
+                // "Reiniciamos el juego"
+                cantidad_revelados = 0; 
+                cantidad_jugadores = 0;
+            }
+        }
+    }
+\end{lstlisting}
+
+\subsection*{Punto B}
+El costo de deployear el contrato es de 904,236 gas \href{https://sepolia.etherscan.io/tx/0xada5c14a0889e3d5cbb4d5b3b86e3e98e126095b995e538e33109778e51f670c}{Link a la creación}.
+
+El costo de interactuar con withdraw es de 29,930 gas \href{https://sepolia.etherscan.io/tx/0xd9e2097eb704afd6eafb454ca006b86f11eb5ff2cea64eacea869429b6ff8223}{Link al withdraw}
+
+El costo de jugar es de 72,150 gas. 
+\href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a jugar}
+
+El costo de revelar para el primer jugador es de 53,466 gas \href{https://sepolia.etherscan.io/tx/0x07437d0462c71bd80d5774399a499576efcee9750f058ca6dd6e55115b84d9eb}{Link a jugar}
+
+El costo de revelar para el segundo jugador es de 62,808 gas \href{https://sepolia.etherscan.io/tx/0xb953eca99800ea9558a27d120fd7a1755cec04efb99100e38da9d5e659dc571c}{Link a revelar del segundo jugador}
+
+
+Si consideramos como "justo" a que ambos jugadores paguen la misma cantidad de gas por jugar, este contrato va a ser "injusto", porque el segundo jugador en revelar, va a tener que pagar un poquito más de gas a la hora de revelar, porque con el gas que pague se va a ejecutar la parte de reveal en la que se decide el ganador. En cambio, el primer jugador que haga reveal no va a tener que pagar por esa parte. 
+
+Dos formas que se me ocurren para que sea más justo es que se compense el gas que consume el segundo jugador en hacer reveal en el premio que va a recibir o se le devuelve de lo que jugo. Otra opción sería hacer una tercera función que revele el ganador, que tengan que ejecutar ambos para decidir el ganador. 
+
+Una forma de gastar menos gas en mi contrato puede ser cambiando los tipos de algunas variables o parámetros, por ejemplo en la función \texttt{revelar}, 
+en vez de recibir un \texttt{string memory}, recibir un \texttt{bytes32}. 
+Esto ahorra gas porque \texttt{string} es un tipo dinámico, y el contrato necesita guardar también su longitud y manejar su contenido de forma más costosa. 
+En cambio, \texttt{bytes32} tiene un tamaño fijo y se guarda de manera más simple y directa, usando menos operaciones en la EVM.
+
+Otra forma de ahorrar gas, podría ser empaquetando varias variables chicas en una sola.  
+Por ejemplo, en mi contrato tengo:
+\begin{itemize}
+    \item \texttt{cantidad\_jugadores} (\texttt{uint32})
+    \item \texttt{cantidad\_revelados} (\texttt{uint32})
+    \item \texttt{valor\_primero} (\texttt{bool})
+    \item \texttt{valor\_segundo} (\texttt{bool})
+\end{itemize}
+
+En Solidity, aunque estas variables sean chicas (como \texttt{bool} o \texttt{uint32}), 
+cada una se guarda en una posición de memoria de 32 bytes.  
+Eso significa que estamos desperdiciando espacio: cuatro variables usan cuatro posiciones de memoria que ocupan 32 bytes, 
+aunque cada una ocupa mucho menos que eso.
+
+Si empaquetamos estas variables en una sola (por ejemplo, en un solo \texttt{uint256}), 
+todas comparten la misma posición.  
+Esto reduce la cantidad de memoria y de lecturas y escrituras que hace el contrato en esta, 
+que es una de las operaciones más costosas en gas. \href{https://rareskills.io/post/gas-optimization}{Fuente de la idea}.
+
+\subsection*{Punto C}
+El principal problema de seguridad de mi contrato es que depende completamente del comportamiento honesto y coordinado de los dos jugadores. El flujo del juego puede quedar bloqueado si al menos uno de los participantes deja de interactuar con el contrato.
+
+Por ejemplo, si uno de los jugadores llama a jugar pero el otro nunca realiza la llamada a jugar o revelar, los fondos del primer jugador quedan atrapados en el contrato y no pueden recuperarse. Esto introduce un riesgo de denial-of-service para el jugador honesto, y para el resto de personas que quieran interactuar con el contrato. 
+
+Además, si dos jugadores maliciosos entran en la partida primero y luego nunca revelan sus valores, pueden impedir que nuevos jugadores puedan interactuar con el contrato para jugar, siendo este otro ataque de Denial Of Service. 
+
+\subsection*{Punto D}
+
+\subsection*{Punto E}
+\href{https://sepolia.etherscan.io/address/0x52ad35083f7be6a2d0a96dff34a7940694ec223f}{Link al contrato con una prueba de que funcione el juego que hicimos con Tiago Guerra}.
 \end{document}
