@@ -1,0 +1,306 @@
+\UseRawInputEncoding
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\usepackage{array}     
+\renewcommand{\arraystretch}{1.5} 
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,       
+    breakatwhitespace=false,
+    showstringspaces=false,
+    frame=single,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+}
+\lstset{
+    inputencoding=utf8,
+    extendedchars=true,
+    literate=
+      {á}{{\'a}}1
+      {é}{{\'e}}1
+      {í}{{\'i}}1
+      {ó}{{\'o}}1
+      {ú}{{\'u}}1
+      {Á}{{\'A}}1
+      {É}{{\'E}}1
+      {Í}{{\'I}}1
+      {Ó}{{\'O}}1
+      {Ú}{{\'U}}1
+      {ñ}{{\~n}}1
+      {Ñ}{{\~N}}1
+}
+\geometry{margin=1in}
+
+\title{\fontsize{16}{18}\selectfont Fundamentos y Aplicaciones de Blockchains \\ Homework 3}
+\author{Matías Eliel Waisman}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Ejercicio 1}
+
+\subsection{Punto A}
+
+El mecanismo que sigue un minero en la aplicación de Bitcoin para insertar transacciones en un bloque es el siguiente:
+
+\begin{itemize}
+\item En primer lugar, el minero recolecta las transacciones que considera válidas, utilizando predicados como \texttt{Validate}. En este proceso verifica, por ejemplo, que no existan casos de \emph{double spending}, que los fondos a transferir realmente pertenezcan al emisor y que la firma de la transacción realizada con la clave privada corresponda con la clave pública del usuario. Además, por cada transacción calcula las \emph{fees} que serán incorporadas en la \emph{coinbase transaction}, como parte de su recompensa.
+
+\item Luego, crea un bloque con la secuencia de transacciones acumuladas, el cual apunta al último bloque minado de la cadena.
+
+\item A continuación, busca un \texttt{nonce} tal que $H(header) < T$, donde $T$ es el \emph{target} definido por la dificultad de minado de la época actual.
+
+\item Una vez que encuentra un \texttt{nonce} válido, el minero realiza un \emph{broadcast} anunciando que ha agregado un nuevo bloque a la cadena. Los demás mineros verifican la validez de las transacciones y del bloque, y si todo es correcto, adoptan dicho bloque o la cadena más larga que haya sido comunicada. La decisión de qué bloque agregar depende del protocolo de consenso de Nakamoto.
+\end{itemize}
+
+Seguir este protocolo garantiza las propiedades de \textbf{Consistencia}, asegurando que todos los mineros honestos compartan la misma ledger, y de \textbf{Liveness}, garantizando que todas las transacciones válidas eventualmente se incorporan a la ledger.
+
+En la función \texttt{validate} también tiene que verificar que las firmas de las transacciones sean válidas y que estén los fondos disponibles para transferir de una cuenta a otra.  
+En la función \texttt{input} hay que tener en cuenta también el PoW.  
+La función \texttt{receive} también tendría que recibir un parámetro $K$, con el cual filtra las transacciones que todavía no están establecidas en la cadena, devolviendo solo aquellas que están establecidas hace más de $K$ rondas.  
+
+\subsection{Punto B}
+
+La \emph{coinbase transaction} tiene como propósito recompensar al minero que logra minar un bloque.  
+A diferencia de una transacción típica, en la que los fondos se debitan de una dirección y se acreditan en otra, en una \emph{coinbase transaction} no se requiere un input previo, ya que los fondos se crean para esta transacción.
+
+Esta transacción es siempre la primera dentro del conjunto de transacciones de un bloque, y transfiere la recompensa al minero que lo generó. Dicha recompensa está compuesta por un monto fijo determinado por el protocolo y las \emph{fees} acumuladas de todas las transacciones incluidas en el bloque.
+
+\href{https://www.geeksforgeeks.org/computer-networks/what-is-coinbase-transaction/}{Fuente}
+
+\section{Ejercicio 2}
+
+\subsection{Punto A}
+
+En el problema de consenso para construir una blockchain, basándonos en las propiedades \emph{Common Prefix}, \emph{Chain Quality} y \emph{Chain Growth}, es posible obtener una solución probabilística al problema de consenso que tolera hasta un tercio de participantes maliciosos.
+
+El inconveniente de este enfoque es que la propiedad de \emph{Chain Quality} no garantiza una cantidad suficiente de bloques generados por mineros honestos.  
+
+Para mejorar esto, se introduce un nuevo protocolo de consenso capaz de soportar hasta la mitad de los participantes maliciosos.  
+La idea es extender el uso de las PoW no solo para el minado de bloques, sino también para el minado de transacciones.  
+En este caso, con transacciones no nos referimos a movimientos de monedas como en Bitcoin, sino a “votos” de un participante dentro del proceso de consenso.  
+De esta forma, la cantidad de votos válidos producidos por cada participante es proporcional a su poder de cómputo, garantizando que los nodos honestos conserven una representación justa dentro del sistema.
+
+Sin embargo, este protocolo introduce un nuevo problema: un adversario podría concentrar todo su poder de cómputo en una sola tarea (por ejemplo, únicamente en minar transacciones o únicamente en minar bloques), rompiendo el equilibrio esperado.
+
+Para evitar esto surge la técnica de \textbf{2x1 PoW}.  
+La idea principal es unificar el minado de bloques y de transacciones en un solo minado donde se relacionan los dos minados. Por eso estamos haciendo dos PoW en una.  
+Esto se logra modificando la estructura de las pruebas, que pasan de ser tuplas $(w, ctr)$ a triplas $(w, ctr, label)$, donde \texttt{label} es un identificador que vincula el minado de bloques con el de transacciones.
+
+\subsection{Punto B}
+
+La probabilidad de éxito de acertarle al \emph{target} de una PoW es
+\[
+P = \frac{t}{2^k}.
+\]
+Como ahora no solo tenemos que resolver una PoW, sino que hay que hacer dos a la vez, $T_1$ y $T_2$, la probabilidad de acertar va a ser:
+\[
+P = P_{t_1} \times P_{t_2} = \frac{t_1}{2^k} \times \frac{t_2}{2^k} = \frac{t_1 \times t_2}{2^{2k}}.
+\]
+Si queremos que la probabilidad de éxito de la 2x1 PoW sea igual a la de la PoW normal, tenemos que igualar:
+\[
+\frac{t_1 \times t_2}{2^{2k}} = \frac{T}{2^k} \iff t_1 \times t_2 = 2^k \times T,
+\]
+siendo $T$ el \emph{target} del PoW original.
+
+\subsection{Punto C}
+
+La idea de abstraer la cantidad de Proof of Works que hacemos en $l$, sirve para tener $l$ pruebas en paralelo de las distintas capas de la blockchain.
+
+Por ejemplo, en la PoW 2x1 teníamos una prueba para los bloques y otra para las transacciones. En una 3x1 podríamos tener una tercera capa para las firmas digitales o para validar algún otro tipo de información.
+
+Esto permite conectar las $l$ capas de consenso en una sola PoW, haciendo que todo el sistema avance sincronizado por el mismo esfuerzo computacional.
+
+También se evita que un atacante concentre su poder de minado en una sola capa, ya que todas las pruebas están unificadas.  
+De esta forma se logra mantener el equilibrio entre las distintas partes del protocolo (bloques, transacciones, firmas, etc.) y se mejora la eficiencia general del sistema.
+
+Una $l$x1 PoW permitiría tener una blockchain paralela, donde varias tareas del consenso se resuelven al mismo tiempo con una sola PoW, combinando seguridad y rendimiento.
+
+\section{Ejercicio 3}
+
+\subsection{Punto A}
+
+En \emph{strong consensus} no basta con que el protocolo termine para considerarlo exitoso. Si no que el valor final debe haber sido propuesto por un participante honesto.  
+Si solo hay dos opciones posibles de salida, se ve trivialmente que, salvo los casos extremos, siempre el resultado provendrá de al menos un participante honesto.  
+El problema surge cuando hay más de dos opciones.
+
+Para lograr esto, no basta con que la cantidad de participantes honestos sea mayor a la cantidad de participantes maliciosos, como exigía en la asunción de \emph{Honest Majority}, ahora se necesita una mayor proporción de participantes honestos respecto de los maliciosos.
+
+Para poder llegar a un consenso fuerte, se necesita que la cantidad de participantes honestos sea al menos \textbf{dos tercios} del total de participantes.
+
+\subsection{Punto B}
+
+El lema de \emph{strong validity} nos dice que si por el protocolo se llega a que un valor $v$ es el elegido, $v$ tiene que haber sido propuesto por un participante honesto.  
+
+Sea $v$ el valor que deciden los participantes honestos. Por la propiedad de \emph{Chain Quality} sabemos que más de dos tercios de los bloques del prefijo común vienen de mineros honestos.  
+Como en los bloques van a estar los \emph{input} de los mineros que lo generaron, el valor más frecuente en el prefijo común va a ser el de los mineros honestos.
+
+Por lo tanto, el valor $v$ decidido por el protocolo va a pertenecer a alguno de los inputs de un minero honesto.
+
+\section{Ejercicio 4}
+
+El código y las pruebas del contrato fueron realizados junto a \textbf{Tiago Guerra}.
+
+\subsection{Punto A}
+
+Las variables internas que utilicé fueron:
+
+\begin{itemize}
+\item Un \texttt{mapping} para registrar la cantidad de tokens que posee cada dirección.  
+\item Una variable interna para responder rápidamente cuántos tokens hay en circulación.  
+\item Otro \texttt{mapping} para almacenar el balance en Ether que tiene cada usuario al realizar el \emph{withdraw}.  
+\end{itemize}
+
+Este último mapping se utiliza para respetar el patrón \textbf{Pull over Push} al momento de vender tokens.  
+Además, se declararon constantes para definir el \textbf{precio del token en wei}, el \textbf{nombre} y el \textbf{símbolo} del token.
+
+El proceso de compra de tokens consiste en enviar Ether al contrato, lo cual ejecuta la función \texttt{receive}, que \emph{mintea} tokens y los acredita al balance del usuario.  
+Si luego el usuario desea venderlos, se le descuentan los tokens y se le acredita el correspondiente balance en Ether en el mapping.
+
+Un usuario puede acceder a su balance llamando a la función \texttt{balanceOf}, pasándole su dirección.  
+También podría implementarse otra función llamada \texttt{balance} que llame internamente a \texttt{balanceOf(msg.sender)} para simplificar el acceso.
+
+\subsection{Punto B}
+
+\begin{itemize}
+\item Costo de deploy del contrato: 1,162,812 gas.
+\item Todas las funciones que son getters cuestan 0 gas.
+\item Costo de enviar Ether para recibir tokens: 70,824 gas.
+\item Costo de vender un token: 56,903 gas.
+\item Costo de retirar fondos (withdraw): 36,309 gas.
+\item Costo de transferir tokens: 47,536 gas.
+\end{itemize}
+
+\subsection{Punto C}
+
+Una vulnerabilidad posible es que el \textbf{dueño del contrato (owner)} puede mintear tokens sin tener Ether de respaldo.  
+Esto podría perjudicar a los usuarios, ya que el propietario podría crear tokens “gratis” sin respaldo en Ether, diluyendo o robando valor del resto de los tokens.
+
+\paragraph{Patrones de diseño utilizados:}
+
+\begin{itemize}
+\item \textbf{Checks–Effects–Interactions:}  
+Aplicado en la función \texttt{withdraw} para evitar ataques de \emph{reentrancy}.  
+Primero se actualiza el estado (efecto) y luego se realiza la transferencia (interacción externa).
+
+\item \textbf{Pull over Push:}  
+También utilizado para evitar ataques de \emph{reentrancy}.  
+En lugar de enviar Ether directamente al usuario al vender, se acumula el saldo en un mapping y el usuario debe retirarlo manualmente con \texttt{withdraw}.
+\end{itemize}
+
+\subsection{Punto D}
+
+\href{https://sepolia.etherscan.io/address/0x9e9ecf0f439e3e9baf78346f78e99428c19d9984}{Link al contrato y transacciones de prueba}
+
+\subsection{Punto E}
+
+\begin{lstlisting}[language=Solidity]
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
+
+contract PastelDePapa {
+    address payable public addr_owner;
+    mapping(address => uint256) private balance;
+    mapping(address => uint256) private amountToWithdraw;
+    uint256 public supply = 0;
+    uint128 constant tokenValue = 600 wei;
+    string constant name = "Pastel de Papa";
+    string constant symbol = "$PDP";
+    
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+    event Mint(address indexed to, uint256 value);
+    event Sell(address indexed from, uint256 value);
+    event Withdrawal(address customer);
+
+    constructor() {
+        addr_owner = payable(msg.sender); 
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return supply; 
+    }
+
+    function balanceOf(address from) public view returns (uint256) {
+        return balance[from];
+    }   
+    
+    function getName() public pure returns (string memory) {
+        return name;
+    }  
+
+    function getSymbol() public pure returns (string memory) {
+        return symbol;
+    }
+
+    function getPrice() public pure returns (uint128) {
+        return tokenValue;
+    }
+    
+    function transfer(address to, uint256 value) public returns (bool) {
+        require(balance[msg.sender] >= value, "Insufficient funds to transfer");
+
+        balance[msg.sender] -= value;
+        balance[to] += value;
+
+        emit Transfer(msg.sender, to, value);
+        return true;  
+    }
+
+    function mint(address to, uint256 value) public returns (bool) {
+        require(msg.sender == addr_owner, "Only the owner can mint tokens");
+
+        supply += value; 
+        balance[to] += value;
+
+        emit Mint(to, value);
+        return true;
+    }
+
+    function sell(uint256 value) public returns (bool) {
+        require(value > 0, "Cant sell less than zero Pasteles de Papa");
+        require(balance[msg.sender] >= value, "Cant sell more tokens than you own");
+
+        supply -= value; 
+        balance[msg.sender] -= value;
+
+        amountToWithdraw[msg.sender] += value * tokenValue;
+        
+        emit Sell(msg.sender, value);
+        return true;
+    }
+
+    function withdraw() public {
+        require(amountToWithdraw[msg.sender] > 0, "There is no balance to withdraw");
+        uint256 b = amountToWithdraw[msg.sender];
+        amountToWithdraw[msg.sender] = 0;
+        payable(msg.sender).transfer(b);
+        emit Withdrawal(msg.sender);
+    }
+
+    function close() public payable {
+        require(msg.sender == addr_owner, "Only owner can close the contract");
+        selfdestruct(addr_owner);
+    }
+
+    receive() external payable {
+        require(msg.value > 0, "Must send at least some wei");
+        require(msg.value % tokenValue == 0, "Must send a multiple of 600 wei");
+        mint(msg.sender, msg.value / tokenValue);
+    }
+}
+\end{lstlisting}
+
+\end{document}
