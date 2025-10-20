@@ -25,6 +25,62 @@ Esta transacción es siempre la primera dentro del conjunto de transacciones de 
 
 Fuente: https://www.geeksforgeeks.org/computer-networks/what-is-coinbase-transaction/
 
+# Ejercicio 2 
+
+## Punto A
+En el problema de consenso para construir una blockchain, basándonos en las propiedades Common Prefix, Chain Quality y Chain Growth, es posible obtener una solución probabilística al problema de consenso que tolera hasta un tercio de participantes maliciosos.
+
+El inconveniente de este enfoque es que la propiedad de Chain Quality no garantiza una cantidad suficiente de bloques generados por mineros honestos. 
+
+Para mejorar esto, se introduce un nuevo protocolo de consenso capaz de soportar hasta la mitad de los participantes maliciosos.
+La idea es extender el uso de las PoW no solo para el minado de bloques, sino también para el minado de transacciones.
+En este caso con transacciones, no nos referimos a movimientos de monedas como en Bitcoin, si no a “votos” de un participante dentro del proceso de consenso.
+De esta forma, la cantidad de votos válidos producidos por cada participante es proporcional a su poder de cómputo, garantizando que los nodos honestos conserven una representación justa dentro del sistema.
+
+Sin embargo, este protocolo introduce un nuevo problema:
+un adversario podría concentrar todo su poder de cómputo en una sola tarea (por ejemplo, únicamente en minar transacciones o únicamente en minar bloques), rompiendo el equilibrio esperado.
+
+Para evitar esto surge la técnica de 2x1 PoW.
+La idea principal es unificar el minado de bloques y de transacciones en un solo minado donde se relacionan los dos minados. Por eso estamos haciendo dos PoW en una. 
+Esto se logra modificando la estructura de las pruebas, que pasan de ser tuplas (w, ctr) a triplas (w, ctr, label), donde label es un identificador que vincula el minado de bloques con el de transacciones.
+
+## Punto B
+La probabilidad de exito de acertarle al target de una PoW es de $P = t/2^{k}$. 
+
+Como ahora no solo tenemos que resolver una PoW, si no que hay que hacer dos a la vez, $T_1$ y $T_2$. La probabilidad de acertar va a ser $P = P_{t_1} \times P_{t_2}$ que es igual a $P = \frac{t_1}{2^{k}} \times \frac{t_2}{2^{k}} = \frac{t_1 \times t_2}{2^{2k}}$. 
+
+Si queremos que la probabilidad de exito de la 2x1 PoW sea igual a la de la PoW "normal" tenemos que igualar: 
+
+$\frac{t_1 \times t_2}{2^{2k}} = \frac{T}{2^{k}} \iff t_1 \times t_2 = 2^{k} \times T$, siendo T el target del PoW original. 
+
+## Punto C
+La idea de abstraer la cantidad de Proof of Works que hacemos en 
+𝑙, sirve para tener 𝑙 pruebas en paralelo de las distintas capas de la blockchain.
+
+Por ejemplo, en la PoW 2x1 teníamos una prueba para los bloques y otra para las transacciones, en una 3x1 podríamos tener una tercera capa para las firmas digitales o para validar algún otro tipo de información.
+
+Esto permite conectar las 𝑙 capas de consenso en una sola PoW, haciendo que todo el sistema avance sincronizado por el mismo esfuerzo computacional.
+
+Tambien se tiene que sigue evitando que un atacante pueda concentrar su poder de minado en una sola capa, ya que todas las pruebas están unificadas.
+De esta forma se logra mantener el equilibrio entre las distintas partes del protocolo (bloques, transacciones, firmas, etc.) y se mejora la eficiencia general del sistema.
+
+Una 𝑙x1 PoW permitiría tener una blockchain paralela, donde varias tareas del consenso se resuelven al mismo tiempo con una sola PoW, combinando seguridad y rendimiento.
+
+# Ejercicio 3
+## Punto A
+En strong consensus no basta con que termine, si no que el valor final si o si tiene que haber sido propuesto por un participante honesto. Si solo hay dos opciones de posibles outputs, se ve trivialmente que salvo los casos extremos siempre el resultado va a provenir de al menos un participante honesto. El tema es que pasa si tenemos mas de dos opciones. 
+
+Para poder lograr esto, no basta con que la cantidad de participantes honestos sea mayor a la cantidad de participantes maliciosos, como exigia la asuncion de Honest Majority, si no que ahora necesitamos una mayor proporcion de participantes honestos versus maliciosos. 
+
+Para poder llegar a un concenso fuerte, se necesita que la cantidad de participantes honestos sea igual a dos tercios de la cantidad de participantes totales. 
+
+## Punto B
+El lema de strong validity nos dice que si por el protocolo se llega a que un valor $v$ es el elegido, $v$ tiene que haber sido propuesto por un participante honesto. 
+
+Sea $v$ el valor que deciden los participantes honestos, por la propiedad de Chain Quality sabemos que mas de dos tercios de los bloques del prefijo comun vienen de mineros honestos. Como en los bloques van a estar los input de los mineros que lo generaron, el valor mas frecuente en el prefijo comun va a ser el de los mineros honestos.
+
+Por lo tanto el valor $v$ decidido por el protocolo, va a pertenecer a alguno de los inputs de un minero honesto. 
+
 # Ejercicio 4  
 
 El código y las pruebas del contrato fueron realizados junto a **Tiago Guerra**.
